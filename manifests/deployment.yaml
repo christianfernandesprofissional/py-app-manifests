@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: py-app-deployment
+  labels:
+    app: py-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: py-app
+  template:
+    metadata:
+      name: py-app
+      labels:
+        app: py-app
+    spec:
+      containers:
+        - name: py-app
+          image: christianfernandesprofissional/py-app:v1
+          ports: 
+            - containerPort: 8000
+              name: py-app 
