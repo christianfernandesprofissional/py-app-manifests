@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: py-app
-          image: christianfernandesprofissional/py-app:v1
+          image: christianfernandesprofissional/py-app:6
           ports: 
             - containerPort: 8000
               name: py-app 
