@@ -12,23 +12,23 @@ Essa pipeline automatiza o ciclo completo de CI/CD (Continuous Integration / Con
 
 O fluxo automatizado é composto por duas partes principais:
 
-- Repositório da Aplicação
+### Repositório da Aplicação localizado em: https://github.com/christianfernandesprofissional/py-app
 
 - Contém o código-fonte e o arquivo Dockerfile.
 
 - Possui um workflow GitHub Actions responsável por:
 
-- Construir a imagem Docker.
+  - Construir a imagem Docker.
 
-- Enviar a imagem para o Docker Hub.
+  - Enviar a imagem para o Docker Hub.
 
-- Atualizar automaticamente o repositório de manifests (utilizado pelo ArgoCD).
+  - Atualizar automaticamente o repositório de manifests (utilizado pelo ArgoCD).
 
-Repositório de Manifests
+### Manifests que estão contidos neste repositório
 
-Contém os arquivos YAML do Kubernetes (Deployment, Service, etc.).
+- Os arquivos YAML do Kubernetes estão contidos no diretório py-app-manifests/manifests/
 
-É monitorado pelo ArgoCD, que detecta alterações e atualiza o ambiente no Rancher Desktop.
+- Os manifests estão sendo monitorado pelo ArgoCD, que detecta alterações e atualiza o ambiente no Rancher Desktop.
 
 ## 🔁 Fluxo da Automação
 
@@ -54,11 +54,12 @@ Contém os arquivos YAML do Kubernetes (Deployment, Service, etc.).
 
 ## Pré-requisitos
 
-- Conta no GitHub (repo público)
+- Conta no GitHub (repositório público)
 - Conta no Docker Hub com token de acesso
 - Rancher Desktop com Kubernetes habilitado
 - kubectl configurado corretamente (kubectl get nodes)
-- ArgoCD instalado no cluster local
+- ArgoCD instalado no cluster local (Rancher)
 - Git instalado
 - Python 3 e Docker instalados
+
 
