@@ -12,7 +12,9 @@ Essa pipeline automatiza o ciclo completo de CI/CD (Continuous Integration / Con
 
 O fluxo automatizado é composto por duas partes principais:
 
-### Repositório da Aplicação localizado em: https://github.com/christianfernandesprofissional/py-app
+### Repositório da Aplicação 
+
+- **Localizado em:** https://github.com/christianfernandesprofissional/py-app
 
 - Contém o código-fonte e o arquivo Dockerfile.
 
@@ -26,7 +28,7 @@ O fluxo automatizado é composto por duas partes principais:
 
 ### Manifests que estão contidos neste repositório
 
-- Os arquivos YAML do Kubernetes estão contidos no diretório py-app-manifests/manifests/
+- Os arquivos YAML do Kubernetes estão contidos no diretório **py-app-manifests/manifests/**
 
 - Os manifests estão sendo monitorado pelo ArgoCD, que detecta alterações e atualiza o ambiente no Rancher Desktop.
 
@@ -138,9 +140,73 @@ Agora temos nossa imagem no Dockerhub
 
 
 
+<img width="1023" height="523" alt="10imagens-dockerhub" src="https://github.com/user-attachments/assets/9ba6198f-5397-41c0-9370-33d466447776" />
 
 
 
 
+### Manifests
+
+Agora vamos criar nosso manifest para que depois ele seja utilizado pelo ArgoCD.
+O Manifest utilizado está desta maneira:
+
+- Deployment:
 
 
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata: 
+        name: py-app-deployment
+        labels:
+          app: py-app
+      spec:
+        replicas: 1
+        selector:
+          matchLabels:
+            app: py-app
+        template:
+          metadata:
+            name: py-app
+            labels:
+              app: py-app
+          spec:
+            containers:
+              - name: py-app
+                image: nome-usuario-dockerhub:nome-app:versão
+                ports: 
+                  - containerPort: 8000
+                    name: py-app 
+      
+- Service:
+
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: py-app-service
+        labels:
+          app: py-app
+      spec:
+        type: NodePort
+        selector:
+          app: py-app
+        ports:
+          - port:  5000
+            targetPort: 8000
+            nodePort: 30500
+          
+Após a criação dos dois arquivos yaml podemos fazer o push para o repositório que conterá os manifests.
+
+
+### Configurações Github
+
+Antes de criar nosso workflow precisamos que algumas configurações sejam feitas.
+Primeiro, no repositório dos manifests vá em **Settings/Actions**
+
+<img width="332" height="599" alt="8repository-config" src="https://github.com/user-attachments/assets/59dc6d97-db87-46b2-b952-4eefd6e95ddf" />
+
+Desça até o fim da página e altere as seguintes configurações:
+
+<img width="853" height="372" alt="9repository-config" src="https://github.com/user-attachments/assets/ef8338f8-f59e-4d4a-99ba-a07e9129422a" />
+
+Essa configuração é para permitir que nosso Workflow consiga fazer alterações no arquivo, e depois consiga fazer um Pull Request.
+Além disso nas configurações da nossa conta, em Settings / Developer Settings
