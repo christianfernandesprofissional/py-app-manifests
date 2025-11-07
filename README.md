@@ -130,7 +130,7 @@ E crie um token para seu computador, com permissão de leitura e escrita:
 <img width="646" height="453" alt="3create-token-dockerhub" src="https://github.com/user-attachments/assets/93a13724-2fda-42fc-adb3-3c56a0158595" />
 
 
-Após a criação, basta seguir os passos mostrados para efetura login no Docker hub pela sua máquina.
+Após a criação, basta seguir os passos mostrados para efetura login no Docker hub pela sua máquina, mas antes salve o login, e a senha gerados em um arquivo txt para podermos utiliza-los posteriormente.
 Depois de logado, vamos fazer um push da nossa imagem no Dockerhub, para isso utilize o comando abaixo:
 
     docker push nome-usuario-dockerhub:nome-app:versão 
@@ -208,5 +208,117 @@ Desça até o fim da página e altere as seguintes configurações:
 
 <img width="853" height="372" alt="9repository-config" src="https://github.com/user-attachments/assets/ef8338f8-f59e-4d4a-99ba-a07e9129422a" />
 
-Essa configuração é para permitir que nosso Workflow consiga fazer alterações no arquivo, e depois consiga fazer um Pull Request.
-Além disso nas configurações da nossa conta, em Settings / Developer Settings
+Essa configuração é para que o repositório permita que nosso Workflow consiga fazer alterações nos manifests, e depois consiga fazer um Pull Request. <br>
+
+Além disso nas configurações da nossa conta, em **Settings / Developer Settings** crie um Fine grained token para que nosso workflow tenha acesso completo no nosso repositório:
+
+<img width="548" height="270" alt="6fine-grained-tokens" src="https://github.com/user-attachments/assets/354488da-7959-4a62-917d-ca9c39e5ed9a" />
+
+Selecione o repositório que token garantirá acesso e adicione as seguintes permissões:
+
+<img width="926" height="831" alt="7fine-grained-tokens-config" src="https://github.com/user-attachments/assets/78557b07-e35f-45e1-99ff-92342b88c48d" />
+
+Copie o Token gerado e salve.
+
+Agora no repositório onde está a aplicação, vá em **Settings / Secrets and Variables / Actions**:
+
+<img width="339" height="239" alt="4create-secrets" src="https://github.com/user-attachments/assets/be8db78f-7de5-4767-927b-f0f30ed9c4d6" />
+
+E adicione 3 secrets, um contendo o login do Dockerhub, outro contendo a senha gerada pelo Dockehub, e outro contendo o token que geramos na nossa conta do Github:
+
+<img width="976" height="299" alt="5-1secrets" src="https://github.com/user-attachments/assets/374a684d-ccf8-4bb7-8677-89e2f146b5cc" />
+
+Com todas estas configurações feitas podemos agora iniciar a criação do nosso workflow.
+
+
+### Workflow
+
+Vá até o repositório onde está contida a aplicação, e entre no diretório **/.github/** crie uma pasta chamada **workflows** e crie um arquivo **update-workflow.yaml**.
+O workflow da aplicação ficará assim:
+
+    name: Build, Push, and Update Deployment
+    
+    on: 
+      push:
+        branches:
+         - main
+    
+    jobs:
+      build:
+        runs-on: ubuntu-latest
+    
+        steps:
+          # Clona o repositório atual 
+          - name: Checkout app repository
+            uses: actions/checkout@v4
+    
+          # Configura Docker Buildx
+          - name: Set up Docker Buildx
+            uses: docker/setup-buildx-action@v3
+    
+          # Login no Docker Hub
+          - name: Log in to Docker Hub
+            uses: docker/login-action@v3
+            with:
+              username: ${{ secrets.DOCKER_USERNAME }}
+              password: ${{ secrets.DOCKER_PASSWORD }}
+    
+          # Cria variáveis de versão
+          - name: Set image version variables
+            id: vars
+            run: |
+              echo "RUN_NUMBER=${GITHUB_RUN_NUMBER}" >> $GITHUB_ENV
+              echo "IMAGE_VERSION=v${GITHUB_RUN_NUMBER}" >> $GITHUB_ENV
+          # Build e push da imagem
+          - name: Build and Push Docker Image
+            uses: docker/build-push-action@v6
+            with:
+              context: .
+              file: ./Dockerfile
+              push: true
+              tags: seu-usuario-github-aqui/nome-do-seu-repositorio-da-aplicação:${{ env.IMAGE_VERSION }}
+    
+          # Mostra imagens locais (debug opcional)
+          - name: Show docker images
+            run: docker images
+    
+          # Checkout do repositório de manifests
+          - name: Checkout manifests repository
+            uses: actions/checkout@v4
+            with:
+              repository: seu-usuario-github-aqui/nome-do-seu-repositorio-dos-manifests
+              token: ${{ secrets.TOKEN_MANIFESTS }}
+              path: nome-do-seu-repositorio-dos-manifests
+    
+          # Atualiza o arquivo deployment.yaml
+          - name: Update deployment image version
+            run: |
+              cd py-app-manifests/manifests
+              sed -i "s|image: seu-usuario-github-aqui/nome-do-seu-repositorio-da-aplicação:.*|image: seu-usuario-github-aqui/nome-do-seu-repositorio-da-aplicação:${IMAGE_VERSION}|" deployment.yaml
+
+          # Cria o Pull Request no repositório dos manifests
+          - name: Create Pull Request
+            id: create-pull-request 
+            uses: peter-evans/create-pull-request@v6
+            with:
+              token: ${{ secrets.TOKEN_MANIFESTS }}
+              base: main
+              branch: auto/update-image-${{ env.IMAGE_VERSION }}
+              title: "Update image to version ${{ env.IMAGE_VERSION }}"
+              body: |
+                This PR updates the image tag to `${{ env.IMAGE_VERSION }}`.
+              delete-branch: true
+              path: ./nome-do-seu-repositorio-dos-manifests
+
+          # Aceita automaticamente o Pull Request feito anteriormente
+          - name: Enable Pull Request Automerge
+            uses: peter-evans/enable-pull-request-automerge@v3
+            with:
+              token: ${{ secrets.TOKEN_MANIFESTS }}
+              repository: seu-usuario-github-aqui/nome-do-seu-repositorio-dos-manifests
+              pull-request-number: ${{ steps.create-pull-request.outputs.pull-request-number }}
+              merge-method: squash
+    
+Este workflow irá gerar a imagem da nossa aplicação já com a versão atualizada de acordo com o número de execução do workflow. Depois irá fazer push da imagem no Docker Hub, em seguida entrará no repositório do manifests, criará uma branch para atualizar a versão da imagem. E por ultimo após as alterações irá fazer um Pull Request para o repositório dos manifests e aceitar automaticamente.
+
+Desta maneira qualquer alteração feita na nossa aplicação será replicada até o nosso ArgoCD.
