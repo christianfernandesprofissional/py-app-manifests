@@ -64,6 +64,7 @@ O fluxo automatizado é composto por duas partes principais:
 - Git instalado
 - Python 3 e Docker instalados
 
+
 ## Sumário
 
 - [Aplicação;](#aplicacao)
@@ -419,6 +420,7 @@ Ou se preferir, pode acessar pelo comando Curl:
 
 <img width="951" height="356" alt="15paginacurl" src="https://github.com/user-attachments/assets/09d95199-1a62-4876-8318-730a6b5f9b50" />
 
+
 </div>
 
 ***
@@ -491,4 +493,9 @@ No ArgoCD repare que o commit de referência também foi alterado:
 
 ## Conclusão
 
+Este projeto mostrou como automatizar todo o ciclo de build e deploy de uma aplicação usando GitHub Actions, Docker Hub e ArgoCD.
+Com essa integração, qualquer alteração no código é automaticamente refletida no cluster Kubernetes, eliminando etapas manuais e garantindo entregas mais rápidas, seguras e consistentes.
+Esta solução serve como base prática para implementar CI/CD completo em ambientes locais ou de produção.
+
 </div>
+
