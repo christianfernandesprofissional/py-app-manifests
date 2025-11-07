@@ -62,4 +62,85 @@ O fluxo automatizado é composto por duas partes principais:
 - Git instalado
 - Python 3 e Docker instalados
 
+# Passo a passo
+
+
+### Aplicação
+
+Para inicar o projeto é necessário primeiro ter a aplicação. Aqui estamos rodando uma aplicação simples utilizando Python 3 e uma biblioteca chamada FastAPI, o arquivo da aplicação contém o seguinte código:
+
+    from fastapi import FastAPI
+
+    app = FastAPI()
+
+    @app.get("/")
+    async def root():
+      return {"message": "Hello World"}
+
+
+Com a aplicação criada vamos utilizar um comando na raiz do projeto para que as dependências sejam salvas em um arquivo:
+
+    pip freeze > requirements.txt
+
+Agora para poder criar uma imagem Docker, precisamos criar um Dockerfile para nossa aplicação, o Dockerfile utilizado está assim:
+
+    FROM python:3
+    
+    WORKDIR /app
+    
+    COPY requirements.txt .
+    
+    RUN pip install --no-cache-dir -r requirements.txt
+    
+    COPY main.py .
+    
+    EXPOSE 8000
+    
+    CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+
+
+Agora podemos fazer o push da nossa aplicação no repositório do github responsável por conter a aplicação.
+
+### DockerHub e imagem
+
+Com o Dockerfile em mãos podemos buildar nossa imagem utilizando o comando:
+
+    docker build  -t nome-usuario-dockerhub:nome-app:versão .
+
+Após a criação da imagem é possível verica-la usando:
+
+    docker images
+
+Com a imagem pronta precisamos logar no DockerHub, para isso é necessário entrar no Dockerhub pelo navegador, após logado vá em Settings/Personal-access-token 
+
+
+
+<img width="275" height="278" alt="1PAT-dockerhub" src="https://github.com/user-attachments/assets/36ccfae6-655f-45a1-b6fb-5cb903450b4b" /> <br>
+
+
+E crie um token para seu computador, com permissão de leitura e escrita:
+
+
+<img width="197" height="98" alt="2create-token-btn-dockerhub" src="https://github.com/user-attachments/assets/9395d569-6454-4732-908f-bce4c93bee8a" /> <br>
+
+
+
+<img width="646" height="453" alt="3create-token-dockerhub" src="https://github.com/user-attachments/assets/93a13724-2fda-42fc-adb3-3c56a0158595" />
+
+
+Após a criação, basta seguir os passos mostrados para efetura login no Docker hub pela sua máquina.
+Depois de logado, vamos fazer um push da nossa imagem no Dockerhub, para isso utilize o comando abaixo:
+
+    docker push nome-usuario-dockerhub:nome-app:versão 
+
+O nome utilizado é o mesmo usado na criação da imagem.
+Agora temos nossa imagem no Dockerhub
+
+
+
+
+
+
+
+
 
