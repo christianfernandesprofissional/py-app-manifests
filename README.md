@@ -64,10 +64,25 @@ O fluxo automatizado é composto por duas partes principais:
 - Git instalado
 - Python 3 e Docker instalados
 
+## Sumário
+
+- [Aplicação;](#aplicacao)
+- [Docker Hub e imagem;](#dockerhub-imagem)
+- [Manifests;](#manifests)
+- [Configurações Github;](#git-config)
+- [Workflow;](#workflow)
+- [ArgoCD;](#argocd)
+- [Testes finais;](#testes-finais)
+- [Conclusão;](#conclusao)
+
+
+***
+
 # Passo a passo
 
+<div id="aplicacao">
 
-### Aplicação
+## Aplicação
 
 Para inicar o projeto é necessário primeiro ter a aplicação. Aqui estamos rodando uma aplicação simples utilizando Python 3 e uma biblioteca chamada FastAPI, o arquivo da aplicação contém o seguinte código:
 
@@ -115,7 +130,13 @@ Agora para poder criar uma imagem Docker, precisamos criar um Dockerfile para no
 
 Agora podemos fazer o push da nossa aplicação no repositório do github responsável por conter a aplicação.
 
-### DockerHub e imagem
+</div>
+
+***
+
+<div id="dockerhub-imagem">
+
+## DockerHub e imagem
 
 Com o Dockerfile em mãos podemos buildar nossa imagem utilizando o comando:
 
@@ -154,10 +175,13 @@ Agora temos nossa imagem no Dockerhub
 
 <img width="1023" height="523" alt="10imagens-dockerhub" src="https://github.com/user-attachments/assets/9ba6198f-5397-41c0-9370-33d466447776" />
 
+</div>
 
+***
 
+<div id="manifests">
 
-### Manifests
+## Manifests
 
 Agora vamos criar nosso manifest para que depois ele seja utilizado pelo ArgoCD.
 O Manifest utilizado está desta maneira:
@@ -208,8 +232,13 @@ O Manifest utilizado está desta maneira:
           
 Após a criação dos dois arquivos yaml podemos fazer o push para o repositório que conterá os manifests.
 
+</div>
 
-### Configurações Github
+***
+
+<div id="git-config">
+
+## Configurações Github
 
 Antes de criar nosso workflow precisamos que algumas configurações sejam feitas.
 Primeiro, no repositório dos manifests vá em **Settings/Actions**
@@ -242,8 +271,13 @@ E adicione 3 secrets, um contendo o login do Dockerhub, outro contendo a senha g
 
 Com todas estas configurações feitas podemos agora iniciar a criação do nosso workflow.
 
+</div>
 
-### Workflow
+***
+
+<div id="workflow">
+
+## Workflow
 
 Vá até o repositório onde está contida a aplicação, e entre no diretório **/.github/** crie uma pasta chamada **workflows** e crie um arquivo **update-workflow.yaml**.
 O workflow da aplicação ficará assim:
@@ -335,7 +369,13 @@ Este workflow irá gerar a imagem da nossa aplicação já com a versão atualiz
 
 Desta maneira qualquer alteração feita na nossa aplicação será replicada até o nosso ArgoCD.
 
-### ArgoCD
+</div>
+
+***
+
+<div id="argocd">
+
+## ArgoCD
 
 Para finalizar, faça login no seu ArgoCD, depois no terminal digite o seguinte comando:
 
@@ -379,7 +419,13 @@ Ou se preferir, pode acessar pelo comando Curl:
 
 <img width="951" height="356" alt="15paginacurl" src="https://github.com/user-attachments/assets/09d95199-1a62-4876-8318-730a6b5f9b50" />
 
-### Testes finais
+</div>
+
+***
+
+<div id="testes-finais">
+
+## Testes finais
 
 Para testar nossa automação, vamos alterar nossa aplicação e fazer um push, para isso este será o novo código da nossa aplicação:
 
@@ -437,4 +483,12 @@ No ArgoCD repare que o commit de referência também foi alterado:
 
 <img width="1249" height="250" alt="23atualizacaoargocd" src="https://github.com/user-attachments/assets/0666734d-842c-488c-95d7-9095d2fe246a" />
 
+</div>
 
+***
+
+<div id="conclusao">
+
+## Conclusão
+
+</div>
