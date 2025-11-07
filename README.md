@@ -52,3 +52,13 @@ Contém os arquivos YAML do Kubernetes (Deployment, Service, etc.).
 
 - O ArgoCD (rodando no Rancher Desktop) detecta a mudança e atualiza automaticamente o deployment no cluster.
 
+## Pré-requisitos
+
+- Conta no GitHub (repo público)
+- Conta no Docker Hub com token de acesso
+- Rancher Desktop com Kubernetes habilitado
+- kubectl configurado corretamente (kubectl get nodes)
+- ArgoCD instalado no cluster local
+- Git instalado
+- Python 3 e Docker instalados
+
