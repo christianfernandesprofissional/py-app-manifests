@@ -30,7 +30,7 @@ Contém os arquivos YAML do Kubernetes (Deployment, Service, etc.).
 
 É monitorado pelo ArgoCD, que detecta alterações e atualiza o ambiente no Rancher Desktop.
 
-## 🔁 Fluxo da Automação (Passo a Passo)
+## 🔁 Fluxo da Automação
 
 - Um push é feito na branch main do repositório da aplicação.
 
@@ -38,16 +38,17 @@ Contém os arquivos YAML do Kubernetes (Deployment, Service, etc.).
 
 - O workflow executa as seguintes etapas:
 
-- Faz o checkout do repositório da aplicação.
+  - Faz o checkout do repositório da aplicação.
 
-- Constrói a imagem Docker da aplicação.
+  - Constrói a imagem Docker da aplicação.
 
-- Envia a imagem para o Docker Hub com a nova tag (ex: v24).
+  - Envia a imagem para o Docker Hub com a nova tag (ex: v24).
 
-- Clona o repositório de manifests.
+  - Clona o repositório de manifests.
 
-- Atualiza o campo image: do arquivo deployment.yaml para apontar para a nova versão da imagem.
+  - Atualiza o campo image: do arquivo deployment.yaml para apontar para a nova versão da imagem.
 
-- Cria um Pull Request no repositório de manifests com essa atualização.
+  - Cria um Pull Request no repositório de manifests com essa atualização.
 
 - O ArgoCD (rodando no Rancher Desktop) detecta a mudança e atualiza automaticamente o deployment no cluster.
+
