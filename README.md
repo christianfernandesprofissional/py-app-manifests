@@ -72,12 +72,24 @@ O fluxo automatizado é composto por duas partes principais:
 Para inicar o projeto é necessário primeiro ter a aplicação. Aqui estamos rodando uma aplicação simples utilizando Python 3 e uma biblioteca chamada FastAPI, o arquivo da aplicação contém o seguinte código:
 
     from fastapi import FastAPI
-
+    from fastapi.responses import HTMLResponse
+    
     app = FastAPI()
-
-    @app.get("/")
+    
+    @app.get("/", response_class=HTMLResponse)
     async def root():
-      return {"message": "Hello World"}
+        html_content = """
+        <html>
+            <head>
+                <title>Hello FastAPI</title>
+            </head>
+            <body>
+                <h1>Hello Beautiful World 🌎</h1>
+                <p>Esta é uma página HTML servida pelo FastAPI.</p>
+            </body>
+        </html>
+        """
+        return html_content
 
 
 Com a aplicação criada vamos utilizar um comando na raiz do projeto para que as dependências sejam salvas em um arquivo:
@@ -322,3 +334,107 @@ O workflow da aplicação ficará assim:
 Este workflow irá gerar a imagem da nossa aplicação já com a versão atualizada de acordo com o número de execução do workflow. Depois irá fazer push da imagem no Docker Hub, em seguida entrará no repositório do manifests, criará uma branch para atualizar a versão da imagem. E por ultimo após as alterações irá fazer um Pull Request para o repositório dos manifests e aceitar automaticamente.
 
 Desta maneira qualquer alteração feita na nossa aplicação será replicada até o nosso ArgoCD.
+
+### ArgoCD
+
+Para finalizar, faça login no seu ArgoCD, depois no terminal digite o seguinte comando:
+
+    argocd repo add endereco-do-seu-repositorio-aqui
+
+Agora vamos criar um namespace exclusivo para nossa aplicação:
+
+    kubectl create namespace python-app
+
+E por fim vamos fazer com que o ArgoCD inicie o deployment e crie o service usando o comando:
+
+    argocd app create nome-da-sua-aplicação --repo caminho-do-seu-repositório  --path caminho-da-pasta-do-seu-yaml-no-github  --dest-server https://kubernetes.default.svc  --dest-namespace python-app  --sync-policy automated  --auto-prune  --self-heal
+
+Agora aguarde a aplicação ser criada, você pode conferir o status no seu ArgoCD:
+
+<img width="395" height="368" alt="11argocd1" src="https://github.com/user-attachments/assets/80bf3602-59f0-4b98-9fd7-2e82936d7ad1" />
+
+<img width="1144" height="345" alt="11argocd2" src="https://github.com/user-attachments/assets/d4de60e1-663b-4785-a990-b42ae77dc08e" />
+
+Para verificar os pods criados use o comando:
+
+    kubectl get pods -n python-app
+
+<img width="745" height="54" alt="12deployment" src="https://github.com/user-attachments/assets/101d31f9-62fd-46d5-966b-8610bfb401d6" />
+
+
+E para verificar os services criados, use:
+
+    kubectl get services -n python-app 
+
+
+<img width="819" height="45" alt="123services" src="https://github.com/user-attachments/assets/bc445cdd-eff1-4aab-9c24-5083dedfa35b" />
+
+Para vizualizar sua aplicação, basta acessar **http://localhost:30500/** no seu navegador:
+
+<img width="594" height="285" alt="14paginanavegador" src="https://github.com/user-attachments/assets/01277816-d224-46ea-b5ce-f5195f26aff0" />
+
+Ou se preferir, pode acessar pelo comando Curl:
+
+    curl -i http://localhost:30500
+
+<img width="951" height="356" alt="15paginacurl" src="https://github.com/user-attachments/assets/09d95199-1a62-4876-8318-730a6b5f9b50" />
+
+### Testes finais
+
+Para testar nossa automação, vamos alterar nossa aplicação e fazer um push, para isso este será o novo código da nossa aplicação:
+
+    from fastapi import FastAPI
+    from fastapi.responses import HTMLResponse
+    
+    app = FastAPI()
+    
+    @app.get("/", response_class=HTMLResponse)
+    async def root():
+        html_content = """
+        <html>
+            <head>
+                <title>Hello FastAPI</title>
+            </head>
+            <body>
+                <h1>Hello Beautiful World 🌎</h1>
+                <p>Esta é uma página HTML servida pelo FastAPI.</p>
+                <p>E está sendo atualizada automaticamente pelo workflow contido em <a href="https://github.com/christianfernandesprofissional/py-app">https://github.com/christianfernandesprofissional/py-app<a/></p>
+            </body>
+        </html>
+        """
+        return html_content
+
+Após as alterações faça push no seu repositório e vá até ele. Repare que logo acima dos arquivos já temos uma indicação de que nosso workflow está trabalhando:
+
+
+<img width="340" height="105" alt="16workflowrodando" src="https://github.com/user-attachments/assets/ac45b1e6-04fe-4242-b3bf-5601a4166a9a" />
+
+Em **Actions** também é possível ver o workflow trabalhando:
+
+<img width="1323" height="285" alt="17workflowrodando2" src="https://github.com/user-attachments/assets/1a66c0f4-f6bf-4c7b-90a0-59bed4aa8c00" />
+
+Aguarde alguns seguntos até que a build esteja completa:
+
+<img width="1839" height="811" alt="18workflowsuccess" src="https://github.com/user-attachments/assets/1804b1be-8d63-4db3-9718-db390c56b40d" />
+
+Depois vá no repositório dos manifests e confira a atualização:
+
+<img width="1586" height="497" alt="19commitmanifests" src="https://github.com/user-attachments/assets/d437cf12-0524-4322-a857-032791bb1caa" />
+
+No Docker Hub também ocorreu a atualização para a nova versão:
+
+<img width="902" height="265" alt="20pushdockerhub" src="https://github.com/user-attachments/assets/d56d45dc-e25c-4b60-a479-7c6904979bf0" />
+
+Após alguns segundos o seu ArgoCD também irá atualizar a aplicação já que seus manifests foram alterados, acesse pelo navegador e veja as atualizações:
+
+<img width="902" height="265" alt="20pushdockerhub" src="https://github.com/user-attachments/assets/d7215846-cebe-4e53-919c-d2c3ebbcfb83" />
+
+Ou pelo Curl:
+
+<img width="997" height="424" alt="22novapaginacurl" src="https://github.com/user-attachments/assets/1370c200-9a82-4ec1-814e-83d1ffc39a7f" />
+
+No ArgoCD repare que o commit de referência também foi alterado:
+
+<img width="1249" height="250" alt="23atualizacaoargocd" src="https://github.com/user-attachments/assets/0666734d-842c-488c-95d7-9095d2fe246a" />
+
+
